@@ -121,6 +121,9 @@ namespace UnityEngine.InputSystem.Layouts
         /// </summary>
         public struct ControlItem
         {
+            internal bool m_UseNewDataPipeline;
+            internal int m_NewDataPipelineChannelBaseId;
+            
             /// <summary>
             /// Name of the control. Cannot be empty or <c>null</c>.
             /// </summary>
@@ -361,6 +364,11 @@ namespace UnityEngine.InputSystem.Layouts
                     result.maxValue = maxValue;
                 else
                     result.maxValue = other.maxValue;
+
+                result.m_UseNewDataPipeline = m_UseNewDataPipeline || other.m_UseNewDataPipeline;
+                result.m_NewDataPipelineChannelBaseId = m_UseNewDataPipeline
+                    ? m_NewDataPipelineChannelBaseId
+                    : other.m_NewDataPipelineChannelBaseId;
 
                 return result;
             }
@@ -1079,6 +1087,8 @@ namespace UnityEngine.InputSystem.Layouts
 
         private static ControlItem CreateControlItemFromMember(MemberInfo member, InputControlAttribute attribute)
         {
+            // TODO add channel id here!
+            
             ////REVIEW: make sure that the value type of the field and the value type of the control match?
 
             // Determine name.
@@ -1198,8 +1208,13 @@ namespace UnityEngine.InputSystem.Layouts
                 maxValue = PrimitiveValue.FromObject(attribute.maxValue);
             }
 
+            var useNewDataPipeline = attribute.m_UseNewDataPipeline;
+            var newDataPipelineChannelBaseId = attribute.m_NewDataPipelineChannelBaseId;
+
             return new ControlItem
             {
+                m_UseNewDataPipeline = useNewDataPipeline,
+                m_NewDataPipelineChannelBaseId = newDataPipelineChannelBaseId,
                 name = new InternedString(name),
                 displayName = displayName,
                 shortDisplayName = shortDisplayName,

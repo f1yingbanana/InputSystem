@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.Utilities;
@@ -109,6 +110,18 @@ namespace UnityEngine.InputSystem
     [Scripting.Preserve]
     public abstract class InputControl
     {
+        // TODO
+        internal bool m_UseNewDataPipeline;
+        internal int m_NewDataPipelineChannelBaseId;
+
+        internal virtual object ReadValueAsObjectInternal()
+        {
+            unsafe
+            {
+                return ReadValueFromStateAsObject(currentStatePtr);
+            }
+        }
+        
         /// <summary>
         /// The name of the control, i.e. the final name part in its path.
         /// </summary>
@@ -483,6 +496,11 @@ namespace UnityEngine.InputSystem
         /// </remarks>
         /// <seealso cref="EvaluateMagnitude(void*)"/>
         public unsafe float EvaluateMagnitude()
+        {
+            return EvaluateMagnitudeInternal();
+        }
+
+        internal virtual unsafe float EvaluateMagnitudeInternal()
         {
             return EvaluateMagnitude(currentStatePtr);
         }
@@ -983,6 +1001,11 @@ namespace UnityEngine.InputSystem
         /// </remarks>
         public TValue ReadValue()
         {
+            return ReadValueInternal();
+        }
+
+        internal virtual TValue ReadValueInternal()
+        {
             unsafe
             {
                 return ReadValueFromState(currentStatePtr);
@@ -995,6 +1018,11 @@ namespace UnityEngine.InputSystem
         /// </summary>
         /// <returns>The control's value in the previous frame.</returns>
         public TValue ReadValueFromPreviousFrame()
+        {
+            return ReadValueFromPreviousFrameInternal();
+        }
+        
+        internal virtual TValue ReadValueFromPreviousFrameInternal()
         {
             unsafe
             {
@@ -1018,11 +1046,17 @@ namespace UnityEngine.InputSystem
                 return ReadValueFromState(defaultStatePtr);
             }
         }
+        
+        internal override object ReadValueAsObjectInternal()
+        {
+            return ReadValue();
+        }
 
         public unsafe TValue ReadValueFromState(void* statePtr)
         {
             if (statePtr == null)
                 throw new ArgumentNullException(nameof(statePtr));
+
             return ProcessValue(ReadUnprocessedValueFromState(statePtr));
         }
 

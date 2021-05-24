@@ -121,12 +121,12 @@ namespace UnityEngine.InputSystem
         /// </remarks>
         /// <seealso cref="ReadValueIntoBuffer"/>
         /// <seealso cref="InputControl{TValue}.ReadValue"/>
-        public static unsafe object ReadValueAsObject(this InputControl control)
+        public static object ReadValueAsObject(this InputControl control)
         {
             if (control == null)
                 throw new ArgumentNullException(nameof(control));
-
-            return control.ReadValueFromStateAsObject(control.currentStatePtr);
+            
+            return control.ReadValueAsObjectInternal();
         }
 
         /// <summary>
@@ -1493,6 +1493,14 @@ namespace UnityEngine.InputSystem
         public struct ControlBuilder
         {
             public InputControl control { get; internal set; }
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal ControlBuilder WithNewDataPipelineChannelBaseId(int newDataPipelineChannelBaseId)
+            {
+                control.m_UseNewDataPipeline = true;
+                control.m_NewDataPipelineChannelBaseId = newDataPipelineChannelBaseId;
+                return this;
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public ControlBuilder At(InputDevice device, int index)
